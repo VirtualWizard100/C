@@ -29,12 +29,12 @@ struct Person {
 typedef struct Person Test;
 
 int main(int argc, char *argv[]) {
-	struct Person Asher;
-	strcpy(Asher.name, argv[1]);
-	Asher.age = 22;
-	float Asherfheight = Asher.height.f_height;
-	Asherfheight = 5.9;
-	printf("%s\n%d\n%f\n", Asher.name, Asher.age, Asherfheight);
+	struct Person Virtual;
+	strcpy(Virtual.name, argv[1]);
+	Virtual.age = 22;
+	float Virtualfheight = Virtual.height.f_height;
+	Virtualfheight = 5.9;
+	printf("%s\n%d\n%f\n", Virtual.name, Virtual.age, Virtualfheight);
 	printf("%d\n", argc);
 	float num = atof(argv[2]);
 	float out = squareroot(&num);
