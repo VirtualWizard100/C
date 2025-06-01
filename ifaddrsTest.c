@@ -13,4 +13,8 @@ int main() {
 		address = address->ifa_next;
 		continue;
 	};
+
+	printf("AF_INET value: %d\nAF_INET6 value: %d\n", AF_INET, AF_INET6);
+	return 0;
+
 };
