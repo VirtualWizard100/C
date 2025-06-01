@@ -9,8 +9,12 @@ int main() {
 	getifaddrs(&addresses);
 	struct ifaddrs * address = addresses;
 	while (address->ifa_next != NULL) {
-		printf("%s\n", address->ifa_name);
+		printf("%p\n", address->ifa_next);
+		printf("%s\n\n", address->ifa_name);
+		int family = address->ifa_addr->sa_family;
+		printf("%s or: 0x%x\n---------------\n\n", family == AF_INET ? "IPv4" : "IPv6", family);
 		address = address->ifa_next;
+
 		continue;
 	};
 
