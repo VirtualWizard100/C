@@ -17,6 +17,8 @@ int main(int argc, char *argv[]) {
 	struct addrinfo hints;
 	struct addrinfo *address_to_bind;
 
+	memset(&hints, 0, sizeof(hints));
+
 	hints.ai_family = AF_INET6;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
