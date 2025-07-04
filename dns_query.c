@@ -1,4 +1,18 @@
-#include "chap05.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#define SOCKET int
+#define ISVALIDSOCKET(s) ((s) >= 0)
+#define GETERRNO() (errno)
+#define CLOSESOCKET(s) close(s)
 
 const unsigned char *print_name(const unsigned char *msg, const unsigned char *p, const unsigned char *end) {	//msg is a pointer to the beginning of the message, p is a pointer to the current name to print, and end is a pointer to one past the end of the message
 
