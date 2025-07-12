@@ -1,4 +1,19 @@
-#include "chap05.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <time.h>
+
+#define SOCKET int
+#define ISVALIDSOCKET(s) ((s) >= 0)
+#define GETERRNO() (errno)
+#define CLOSESOCKET(s) close(s)
 
 #define TIMEOUT 5.0
 
