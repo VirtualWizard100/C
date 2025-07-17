@@ -17,7 +17,6 @@
 #define CLOSESOCKET(s) close(s)
 
 #define MAX_QUEUE 10
-
 #define NAME_INFO 1
 
 const char *get_content_type(const char *path) {
