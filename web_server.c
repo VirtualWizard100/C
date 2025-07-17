@@ -1,4 +1,4 @@
-  GNU nano 8.4                                                                                                      chap05.h                                                                                                               
+                                                                                                
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
