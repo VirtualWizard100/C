@@ -19,6 +19,7 @@
 
 #define SOCKET int
 #define MY_IP 0
+#define HEX 0
 //IP datagrams that are fragmented need to make the first fragment 8 bytes
 
 int main() {
@@ -79,7 +80,7 @@ int main() {
 		unsigned char *p_packet = IP_Header_Buffer;
 
 		printf("Recieved %d bytes\n",  bytes_recieved);
-
+#if HEX == 1
 		for (int i = 0; i <= bytes_recieved; i++) {
 			printf("%.2x ", *p_packet);
 			p_packet++;
@@ -88,7 +89,16 @@ int main() {
 				printf("\n");
 			};
 		};
+#else
+		for (int i = 0; i <= bytes_recieved; i++) {
+                        printf("%c ", *p_packet);
+                        p_packet++;
 
+                        if (i%32 == 0) {
+                                printf("\n");
+                        };
+                };
+#endif
 		printf("\n");
 
 		uint32_t src_address = peer_address->ip_src_addr;
@@ -111,7 +121,7 @@ int main() {
 
 		printf("Internet Header Length: %x\n", peer_address->ip_ihl);
 
-		printf("%x: %x: %x: %x\n", peer_address->ip_precedence, peer_address->ip_delay, peer_address->ip_throughput, peer_address->ip_relibility);
+		printf("Precedence: %x: Delay: %x: Throughput: %x: Relibility: %x\n", peer_address->ip_precedence, peer_address->ip_delay, peer_address->ip_throughput, peer_address->ip_relibility);
 
 //		printf("Reserved: %d\n", peer_address->ip_reserved);
 
@@ -127,7 +137,7 @@ int main() {
 		printf("Reserved: %b\n", ((ntohs(peer_address->ip_frag_off_res_df_mf) & 0x8000) >> 15));
 		printf("Don't Fragment: %b\n", ((ntohs(peer_address->ip_frag_off_res_df_mf) & 0x4000) >> 14));
 		printf("More Fragments: %b\n", ((ntohs(peer_address->ip_frag_off_res_df_mf) & 0x2000) >> 13));
-
+//		printf("Options: %d\n", peer_address->ip_options);
 /*		printf("Fragment Offset: %d\n", peer_address->ip_frag_off);
 		printf("Don't Fragment: %d\n", peer_address->ip_df);
 		printf("More Fragments: %d\n", peer_address->ip_mf);
