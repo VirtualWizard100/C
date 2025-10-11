@@ -121,6 +121,7 @@ int main(int argc, char *argv[]) {
 		uint8_t IP_Header_len;
 		struct tcphdr *tcp;
 		struct udphdr *udp;
+		unsigned char *data_p;
 
 		if (Protocol == 0x0800 || Protocol == 0x0806) {
 			struct IP_Header *ip = (struct IP_Header *) (buffer + sizeof(struct ethhdr));
@@ -158,6 +159,28 @@ int main(int argc, char *argv[]) {
 				printf("Acknowledgment Flag: %b\n", tcp->ack);
 				printf("Urgent Flag: %b\n", tcp->urg);
 
+				data_p = (unsigned char *) (buffer + sizeof(struct ethhdr) + IP_Header_len + sizeof(struct tcphdr));
+
+				uint32_t Data_len = (strlen(buffer) - sizeof(struct ethhdr) - IP_Header_len - sizeof(struct tcphdr));
+
+				for (int i = 0; i < Data_len; i++) {
+
+#if RAW == 1
+					printf("%.2x ", *data_p);
+#else
+					printf("%c", *data_p);
+#endif
+					p++;
+
+					if (i != 0 && i%32 == 0) {
+						printf("\n");
+					};
+
+				};
+
+				printf("\n");
+
+
 			} else if (ip->ip_proto == 17) {
 				udp = (struct udphdr *) (buffer + sizeof(struct ethhdr) + IP_Header_len);
 
@@ -167,6 +190,25 @@ int main(int argc, char *argv[]) {
 				printf("Destination Port: 0x%.4x (%d)\n", ntohs(udp->dest), ntohs(udp->dest));
 				printf("UDP Length: 0x%.4x (%d)\n", ntohs(udp->len), ntohs(udp->len));
 				printf("Checksum: 0x%.4x (%d)\n", ntohs(udp->check), ntohs(udp->check));
+
+				data_p = (buffer + sizeof(struct ethhdr) + IP_Header_len + sizeof(struct udphdr));
+
+				uint32_t Data_len = (strlen(buffer) - sizeof(struct ethhdr) - IP_Header_len - sizeof(struct udphdr));
+
+				for (int i = 0; i < Data_len; i++) {
+
+#if RAW == 1
+					printf("%.2x ", *data_p);
+#else
+					printf("%c", *data_p);
+#endif
+
+					if (i != 0 && i%32 == 0) {
+						printf("\n");
+					};
+				};
+
+				printf("\n");
 			};
 
 		} else if (Protocol == 0x86DD) {
@@ -212,6 +254,29 @@ int main(int argc, char *argv[]) {
                                 printf("Acknowledgment Flag: %b\n", tcp->ack);
                                 printf("Urgent Flag: %b\n", tcp->urg);
 
+				data_p = (unsigned char *) (buffer + sizeof(struct ethhdr) + sizeof(struct ipv6hdr) + sizeof(struct tcphdr));
+
+				uint32_t Data_len = (uint32_t) (strlen(buffer) - sizeof(struct ethhdr) - sizeof(struct ipv6hdr) - sizeof(struct tcphdr));
+
+				printf("Data\n\n");
+
+				for (int i = 0; i < Data_len; i++) {
+
+#if RAW == 1
+					printf("%.2x ", *data_p);
+#else
+					printf("%c", *data_p);
+#endif
+
+					if (i != 0 && i%32 == 0) {
+						printf("\n");
+					};
+
+					p++;
+				};
+
+				printf("\n");
+
 			} else if (ipv6->nexthdr == 17) {
 				printf("UDP Header\n\n");
 
@@ -221,6 +286,27 @@ int main(int argc, char *argv[]) {
 				printf("Destination Port: 0x%.4x (%u)\n", ntohs(udp->dest), ntohs(udp->dest));
 				printf("UDP Length: 0x%.4x (%u)\n", ntohs(udp->len), ntohs(udp->len));
 				printf("Checksum: 0x%.4x (%u)\n", ntohs(udp->check), ntohs(udp->check));
+
+				data_p = (unsigned char *) (buffer + sizeof(struct ethhdr) + sizeof(struct ipv6hdr) + sizeof(struct udphdr));
+
+				uint32_t Data_len = (uint32_t) (strlen(buffer) - sizeof(struct ethhdr) - sizeof(struct ipv6hdr) - sizeof(struct udphdr));
+
+				printf("Data\n\n");
+
+				for (int i = 0; i < Data_len; i++) {
+#if RAW == 1
+					printf("%.2x ", *data_p);
+#else
+					printf("%c", *data_p);
+#endif
+
+					if (i != 0 && i%32 == 0) {
+						printf("\n");
+					};
+				};
+
+				printf("\n");
+
 			};
 
 		};
