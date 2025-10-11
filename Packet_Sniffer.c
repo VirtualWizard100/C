@@ -22,7 +22,7 @@
 
 #define RAW 1
 #define INFINITE 1
-#define DUMP 0
+#define DUMP 1
 #define ONLY_DUMP 0
 #define SHOW_ETH 0
 
@@ -148,8 +148,8 @@ int main(int argc, char *argv[]) {
 
 				printf("Source Port: 0x%.4x (%d)\n", ntohs(tcp->source), ntohs(tcp->source));
 				printf("Destination Port: 0x%.4x (%d)\n", ntohs(tcp->dest), ntohs(tcp->dest));
-				printf("Sequence Number: 0x%.8x (%d)\n", (uint32_t) ntohl(tcp->seq), (uint32_t) ntohl(tcp->seq));
-				printf("Acknowledgement Number: 0x%.8x (%d)\n", (uint32_t) ntohl(tcp->ack_seq), (uint32_t) ntohl(tcp->ack_seq));
+				printf("Sequence Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->seq), (uint32_t) ntohl(tcp->seq));
+				printf("Acknowledgement Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->ack_seq), (uint32_t) ntohl(tcp->ack_seq));
 				printf("Reserved: %d\n", tcp->res1);
 				printf("Finished Flag: %b\n", tcp->fin);
 				printf("Synchronization Flag: %b\n", tcp->syn);
@@ -196,9 +196,31 @@ int main(int argc, char *argv[]) {
 			printf("Destination Address: %s\n", daddr6_s);
 
 			if (ipv6->nexthdr == 6) {
+				tcp = (struct tcphdr *) (buffer + sizeof(struct ethhdr) + sizeof(struct ipv6hdr));
+
 				printf("TCP Header\n\n");
+
+				printf("Source Port: 0x%.4x (%d)\n", ntohs(tcp->source), ntohs(tcp->source));
+                                printf("Destination Port: 0x%.4x (%d)\n", ntohs(tcp->dest), ntohs(tcp->dest));
+                                printf("Sequence Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->seq), (uint32_t) ntohl(tcp->seq));
+                                printf("Acknowledgement Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->ack_seq), (uint32_t) ntohl(tcp->ack_seq));
+                                printf("Reserved: %d\n", tcp->res1);
+                                printf("Finished Flag: %b\n", tcp->fin);
+                                printf("Synchronization Flag: %b\n", tcp->syn);
+                                printf("Reset Flag: %b\n", tcp->rst);
+                                printf("Push Flag: %b\n", tcp->psh);
+                                printf("Acknowledgment Flag: %b\n", tcp->ack);
+                                printf("Urgent Flag: %b\n", tcp->urg);
+
 			} else if (ipv6->nexthdr == 17) {
 				printf("UDP Header\n\n");
+
+				udp = (struct udphdr *) (buffer + sizeof(struct ethhdr) + sizeof(struct ipv6hdr));
+
+				printf("Source Port: 0x%.4x (%u)\n", ntohs(udp->source), ntohs(udp->source));
+				printf("Destination Port: 0x%.4x (%u)\n", ntohs(udp->dest), ntohs(udp->dest));
+				printf("UDP Length: 0x%.4x (%u)\n", ntohs(udp->len), ntohs(udp->len));
+				printf("Checksum: 0x%.4x (%u)\n", ntohs(udp->check), ntohs(udp->check));
 			};
 
 		};
