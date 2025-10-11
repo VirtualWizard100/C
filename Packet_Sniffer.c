@@ -6,6 +6,7 @@
 #include <linux/if_packet.h>
 #include <net/if.h>
 #include <netinet/tcp.h>
+#include <netinet/udp.h>
 #include <netinet/ip.h>
 #include <errno.h>
 #include <sys/ioctl.h>
@@ -21,7 +22,7 @@
 
 #define RAW 1
 #define INFINITE 1
-#define DUMP 1
+#define DUMP 0
 #define ONLY_DUMP 0
 #define SHOW_ETH 0
 
@@ -76,41 +77,43 @@ int main(int argc, char *argv[]) {
 
 //		printf("%d bytes recieved\n", bytes_recieved);
 
-		unsigned char *p = (unsigned char *) buffer;
-#if DUMP == 1
-		for (int i = 0; i <= bytes_recieved; ++i) {
-
-#if RAW == 1
-			printf("%.2x ", *p);
-#else
-			printf("%c", *p);
-#endif
-			p++;
-
-			if (i != 0 && i%32 == 0) {
-				printf("\n");
-			};
-
-		};
-#endif
-		printf("\n\n");
-
-#if DUMP == 1
-#if ONLY_DUMP == 1
-		printf("\n");
-
-		continue;
-#endif
-#endif
-
 		struct ethhdr *Eth = (struct ethhdr *) buffer;
 
 		uint16_t Protocol = ntohs(Eth->h_proto);
 
-/*		if (Protocol != 0x86DD) {
+/*		if (Protocol == 0x86DD) {
 			continue;
 		};
 */
+
+               unsigned char *p = (unsigned char *) buffer;
+
+#if DUMP == 1
+                for (int i = 0; i <= bytes_recieved; ++i) {
+
+#if RAW == 1
+                        printf("%.2x ", *p);
+#else
+                        printf("%c", *p);
+#endif
+                        p++;
+
+                        if (i != 0 && i%32 == 0) {
+                                printf("\n");
+                        };
+
+                };
+#endif
+                printf("\n\n");
+
+#if DUMP == 1
+#if ONLY_DUMP == 1
+               printf("\n");
+
+                continue;
+#endif
+#endif
+
 		printf("Source Ethernet Address: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", Eth->h_source[0], Eth->h_source[1], Eth->h_source[2], Eth->h_source[3], Eth->h_source[4], Eth->h_source[5]);
 		printf("Destination Ethernet Address: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", Eth->h_dest[0], Eth->h_dest[1], Eth->h_dest[2], Eth->h_dest[3], Eth->h_dest[4], Eth->h_dest[5]);
 		printf("Protocol: 0x%.4x (%s)\n", Protocol, Ethernet_Protocol(Protocol));
@@ -145,19 +148,32 @@ int main(int argc, char *argv[]) {
 
 				printf("Source Port: 0x%.4x (%d)\n", ntohs(tcp->source), ntohs(tcp->source));
 				printf("Destination Port: 0x%.4x (%d)\n", ntohs(tcp->dest), ntohs(tcp->dest));
-				printf("Sequence Number: 0x%.8x (%d)\n", ntohl(tcp->seq), ntohl(tcp->seq));
-				printf("Acknowledgement Number: 0x%.8x (%d)\n", ntohl(tcp->ack_seq), ntohl(tcp->ack_seq));
+				printf("Sequence Number: 0x%.8x (%d)\n", (uint32_t) ntohl(tcp->seq), (uint32_t) ntohl(tcp->seq));
+				printf("Acknowledgement Number: 0x%.8x (%d)\n", (uint32_t) ntohl(tcp->ack_seq), (uint32_t) ntohl(tcp->ack_seq));
+				printf("Reserved: %d\n", tcp->res1);
+				printf("Finished Flag: %b\n", tcp->fin);
+				printf("Synchronization Flag: %b\n", tcp->syn);
+				printf("Reset Flag: %b\n", tcp->rst);
+				printf("Push Flag: %b\n", tcp->psh);
+				printf("Acknowledgment Flag: %b\n", tcp->ack);
+				printf("Urgent Flag: %b\n", tcp->urg);
+
 			} else if (ip->ip_proto == 17) {
 				udp = (struct udphdr *) (buffer + sizeof(struct ethhdr) + IP_Header_len);
 
-				printf("UDP Header");
+				printf("UDP Header\n\n");
+
+				printf("Source Port: 0x%.4x (%d)\n", ntohs(udp->source), ntohs(udp->source));
+				printf("Destination Port: 0x%.4x (%d)\n", ntohs(udp->dest), ntohs(udp->dest));
+				printf("UDP Length: 0x%.4x (%d)\n", ntohs(udp->len), ntohs(udp->len));
+				printf("Checksum: 0x%.4x (%d)\n", ntohs(udp->check), ntohs(udp->check));
 			};
 
 		} else if (Protocol == 0x86DD) {
 			struct ipv6hdr *ipv6 = (struct ipv6hdr *) (buffer + sizeof(struct ethhdr));
 
 			printf("Version: %d\n", ipv6->version);
-			printf("Traffic Class: %.2x\n", ipv6->priority);
+			printf("Traffic Class: 0x%.2x\n", ipv6->priority);
 			uint32_t flow_label = (uint32_t) (((uint32_t) ipv6->flow_lbl[0] << 16) | ((uint32_t) ipv6->flow_lbl[1] << 8) | ((uint32_t) ipv6->flow_lbl[2]));
 			printf("Flow Label: 0x%.6x (%d)\n", flow_label, flow_label);
 			printf("Payload Length: 0x%.4x (%d)\n", ntohs(ipv6->payload_len), ntohs(ipv6->payload_len));
@@ -179,8 +195,16 @@ int main(int argc, char *argv[]) {
 			};
 			printf("Destination Address: %s\n", daddr6_s);
 
+			if (ipv6->nexthdr == 6) {
+				printf("TCP Header\n\n");
+			} else if (ipv6->nexthdr == 17) {
+				printf("UDP Header\n\n");
+			};
+
 		};
 
+		printf("\n");
+		printf("-----------------------------------------------------------------------------------------------\n");
 		printf("\n");
 
 	};
