@@ -248,16 +248,16 @@ int main(int argc, char *argv[]) {
 				printf("TCP Header\n\n");
 
 				printf("Source Port: 0x%.4x (%d)\n", ntohs(tcp->source), ntohs(tcp->source));
-                                printf("Destination Port: 0x%.4x (%d)\n", ntohs(tcp->dest), ntohs(tcp->dest));
-                                printf("Sequence Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->seq), (uint32_t) ntohl(tcp->seq));
-                                printf("Acknowledgement Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->ack_seq), (uint32_t) ntohl(tcp->ack_seq));
-                                printf("Reserved: %d\n", tcp->res1);
-                                printf("Finished Flag: %b\n", tcp->fin);
-                                printf("Synchronization Flag: %b\n", tcp->syn);
-                                printf("Reset Flag: %b\n", tcp->rst);
-                                printf("Push Flag: %b\n", tcp->psh);
-                                printf("Acknowledgment Flag: %b\n", tcp->ack);
-                                printf("Urgent Flag: %b\n", tcp->urg);
+                printf("Destination Port: 0x%.4x (%d)\n", ntohs(tcp->dest), ntohs(tcp->dest));
+                printf("Sequence Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->seq), (uint32_t) ntohl(tcp->seq));
+                printf("Acknowledgement Number: 0x%.8x (%u)\n", (uint32_t) ntohl(tcp->ack_seq), (uint32_t) ntohl(tcp->ack_seq));
+                printf("Reserved: %d\n", tcp->res1);
+                printf("Finished Flag: %b\n", tcp->fin);
+                printf("Synchronization Flag: %b\n", tcp->syn);
+                printf("Reset Flag: %b\n", tcp->rst);
+                printf("Push Flag: %b\n", tcp->psh);
+                printf("Acknowledgment Flag: %b\n", tcp->ack);
+                printf("Urgent Flag: %b\n", tcp->urg);
 
 #if DATA == 1
 				data_p = (unsigned char *) (buffer + sizeof(struct ethhdr) + sizeof(struct ipv6hdr) + sizeof(struct tcphdr));
