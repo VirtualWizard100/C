@@ -20,7 +20,7 @@
 
 #define SOCKET int
 
-#define RAW 0
+#define RAW 1
 #define INFINITE 1
 #define DUMP 1
 #define ONLY_DUMP 0
@@ -45,14 +45,14 @@ int main(int argc, char *argv[]) {
 
 	unsigned char Ethernet_Address[100];
 
-	strncpy(ifr.ifr_name, "wlan0", 5);
+	strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ);
 	ifr.ifr_flags = (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_PROMISC | IFF_MULTICAST);
 
 	ioctl(s, SIOCSIFFLAGS, &ifr);
 	ioctl(s, SIOCGIFINDEX, &ifr);
 	ioctl(s, SIOCGIFHWADDR, &ifr);
 
-	strncpy(Ethernet_Address, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
+	strncpy((char *) Ethernet_Address, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
 
 #if SHOW_ETH == 1
 	printf("%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", Ethernet_Address[0], Ethernet_Address[1], Ethernet_Address[2], Ethernet_Address[3], Ethernet_Address[4], Ethernet_Address[5]);
@@ -70,13 +70,13 @@ int main(int argc, char *argv[]) {
 
 	uint32_t number_of_packets = atoi(argv[1]);
 
-	for (int i = 0; i < number_of_packets; i++) {
+	for (uint32_t i = 0; i < number_of_packets; i++) {
 #endif
 		char buffer[BUFF_SIZE];
 
-		int bytes_recieved = recvfrom(s, buffer, BUFF_SIZE, 0, NULL, NULL);
+		uint32_t bytes_recieved = recvfrom(s, buffer, BUFF_SIZE, 0, NULL, NULL);
 
-		printf("%d bytes recieved\n", bytes_recieved);
+		printf("%d bytes recieved\n\n", bytes_recieved);
 
 		struct ethhdr *Eth = (struct ethhdr *) buffer;
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
                unsigned char *p = (unsigned char *) buffer;
 
 #if DUMP == 1
-                for (int i = 0; i <= bytes_recieved; ++i) {
+                for (uint32_t i = 0; i <= bytes_recieved; ++i) {
 
 #if RAW == 1
                         printf("%.2x ", *p);
@@ -115,6 +115,8 @@ int main(int argc, char *argv[]) {
 #endif
 #endif
 
+		printf("Ethernet Header\n\n");
+
 		printf("Source Ethernet Address: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", Eth->h_source[0], Eth->h_source[1], Eth->h_source[2], Eth->h_source[3], Eth->h_source[4], Eth->h_source[5]);
 		printf("Destination Ethernet Address: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", Eth->h_dest[0], Eth->h_dest[1], Eth->h_dest[2], Eth->h_dest[3], Eth->h_dest[4], Eth->h_dest[5]);
 		printf("Protocol: 0x%.4x (%s)\n", Protocol, Ethernet_Protocol(Protocol));
@@ -126,6 +128,9 @@ int main(int argc, char *argv[]) {
 
 		if (Protocol == 0x0800 || Protocol == 0x0806) {
 			struct IP_Header *ip = (struct IP_Header *) (buffer + sizeof(struct ethhdr));
+
+			printf("\n");
+			printf("IPv4 Header\n\n");
 
 			IP_Header_len = (ip->ip_ihl * 4);
 			printf("Version: %d\n", ip->ip_version);
@@ -146,6 +151,7 @@ int main(int argc, char *argv[]) {
 			if (ip->ip_proto == 6) {
 				tcp = (struct tcphdr *) (buffer + sizeof(struct ethhdr) + IP_Header_len);
 
+				printf("\n");
 				printf("TCP Header\n\n");
 
 				printf("Source Port: 0x%.4x (%d)\n", ntohs(tcp->source), ntohs(tcp->source));
@@ -160,13 +166,14 @@ int main(int argc, char *argv[]) {
 				printf("Acknowledgment Flag: %b\n", tcp->ack);
 				printf("Urgent Flag: %b\n", tcp->urg);
 #if DATA == 1
+				printf("\n");
 				printf("Data\n\n");
 
 				data_p = (unsigned char *) (buffer + sizeof(struct ethhdr) + IP_Header_len + sizeof(struct tcphdr));
 
 				uint32_t Data_len = (bytes_recieved - sizeof(struct ethhdr) - IP_Header_len - sizeof(struct tcphdr));
 
-				for (int i = 0; i <= Data_len; i++) {
+				for (uint32_t i = 0; i <= Data_len; i++) {
 
 #if RAW == 1
 					printf("%.2x ", data_p[i]);
@@ -186,6 +193,7 @@ int main(int argc, char *argv[]) {
 			} else if (ip->ip_proto == 17) {
 				udp = (struct udphdr *) (buffer + sizeof(struct ethhdr) + IP_Header_len);
 
+				printf("\n");
 				printf("UDP Header\n\n");
 
 				printf("Source Port: 0x%.4x (%d)\n", ntohs(udp->source), ntohs(udp->source));
@@ -193,13 +201,14 @@ int main(int argc, char *argv[]) {
 				printf("UDP Length: 0x%.4x (%d)\n", ntohs(udp->len), ntohs(udp->len));
 				printf("Checksum: 0x%.4x (%d)\n", ntohs(udp->check), ntohs(udp->check));
 #if DATA == 1
+				printf("\n");
 				printf("Data\n\n");
 
 				data_p = (unsigned char *) (buffer + sizeof(struct ethhdr) + IP_Header_len + sizeof(struct udphdr));
 
 				uint32_t Data_len = (bytes_recieved - sizeof(struct ethhdr) - IP_Header_len - sizeof(struct udphdr));
 
-				for (int i = 0; i <= Data_len; i++) {
+				for (uint32_t i = 0; i <= Data_len; i++) {
 
 #if RAW == 1
 					printf("%.2x ", data_p[i]);
@@ -219,6 +228,9 @@ int main(int argc, char *argv[]) {
 		} else if (Protocol == 0x86DD) {
 			struct ipv6hdr *ipv6 = (struct ipv6hdr *) (buffer + sizeof(struct ethhdr));
 
+			printf("\n");
+			printf("IPv6 Header\n\n");
+
 			printf("Version: %d\n", ipv6->version);
 			printf("Traffic Class: 0x%.2x\n", ipv6->priority);
 			uint32_t flow_label = (uint32_t) (((uint32_t) ipv6->flow_lbl[0] << 16) | ((uint32_t) ipv6->flow_lbl[1] << 8) | ((uint32_t) ipv6->flow_lbl[2]));
@@ -227,7 +239,6 @@ int main(int argc, char *argv[]) {
 			printf("Next Header: %d (%s)\n", ipv6->nexthdr, get_protocol(ipv6->nexthdr));
 			printf("Hop Limit: %d\n", ipv6->hop_limit);
 			struct in6_addr saddr6_p = ipv6->saddr;
-			unsigned char *saddr6 = (unsigned char *) &saddr6_p;
 			unsigned char saddr6_s[INET6_ADDRSTRLEN];
 			if (inet_ntop(AF_INET6, &(saddr6_p), saddr6_s, sizeof(saddr6_s)) < 0) {
 				fprintf(stderr, "inet_ntop() Failed\n");
@@ -236,7 +247,7 @@ int main(int argc, char *argv[]) {
 			printf("Source Address: %s\n", saddr6_s);
 			struct in6_addr daddr6_p = ipv6->daddr;
 			unsigned char daddr6_s[INET6_ADDRSTRLEN];
-			if (inet_ntop(AF_INET6, &daddr6_s, (char *) daddr6_s, sizeof(daddr6_s)) == NULL) {
+			if (inet_ntop(AF_INET6, &(daddr6_p), daddr6_s, sizeof(daddr6_s)) == NULL) {
 				fprintf(stderr, "inet_ntop() Failed\n");
 				return 1;
 			};
@@ -245,6 +256,7 @@ int main(int argc, char *argv[]) {
 			if (ipv6->nexthdr == 6) {
 				tcp = (struct tcphdr *) (buffer + sizeof(struct ethhdr) + sizeof(struct ipv6hdr));
 
+				printf("\n");
 				printf("TCP Header\n\n");
 
 				printf("Source Port: 0x%.4x (%d)\n", ntohs(tcp->source), ntohs(tcp->source));
@@ -264,9 +276,10 @@ int main(int argc, char *argv[]) {
 
 				uint32_t Data_len = (uint32_t) (bytes_recieved - sizeof(struct ethhdr) - sizeof(struct ipv6hdr) - sizeof(struct tcphdr));
 
+				printf("\n");
 				printf("Data\n\n");
 
-				for (int i = 0; i <= Data_len; i++) {
+				for (uint32_t i = 0; i <= Data_len; i++) {
 
 #if RAW == 1
 					printf("%.2x ", data_p[i]);
@@ -284,6 +297,8 @@ int main(int argc, char *argv[]) {
 				printf("\n");
 #endif
 			} else if (ipv6->nexthdr == 17) {
+
+				printf("\n");
 				printf("UDP Header\n\n");
 
 				udp = (struct udphdr *) (buffer + sizeof(struct ethhdr) + sizeof(struct ipv6hdr));
@@ -298,9 +313,10 @@ int main(int argc, char *argv[]) {
 
 				uint32_t Data_len = (uint32_t) (bytes_recieved - sizeof(struct ethhdr) - sizeof(struct ipv6hdr) - sizeof(struct udphdr));
 
+				printf("\n");
 				printf("Data\n\n");
 
-				for (int i = 0; i <= Data_len; i++) {
+				for (uint32_t i = 0; i <= Data_len; i++) {
 #if RAW == 1
 					printf("%.2x ", data_p[i]);
 #else
