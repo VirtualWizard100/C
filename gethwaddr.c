@@ -40,6 +40,11 @@ char *get_hwaddr(struct ifreq ifr) {
 
 int main(int argc, char **argv) {
 
+	if (argc < 2) {
+		fprintf(stderr, "Usage: ./gethwaddr interface\n");
+		return 1;
+	};
+
 	S s = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
 
 	if (s < 0) {
@@ -50,7 +55,7 @@ int main(int argc, char **argv) {
 
 	struct ifreq ifr;
 
-	if (strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ) < 0) {
+	if (strncpy(ifr.ifr_name, argv[1], IFNAMSIZ) < 0) {
 		fprintf(stderr, "Line %d: strncpy failed\n", (__LINE__ - 1));
 		return 1;
 	};
