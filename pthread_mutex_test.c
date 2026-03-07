@@ -9,7 +9,7 @@
 #define SOCKET int
 
 pthread_mutex_t mutex;
-
+static unsigned long sum = 0;
 void *long_function(void *message) {
 
 	pthread_mutex_lock(&mutex);
@@ -19,6 +19,8 @@ void *long_function(void *message) {
 	};
 
 	pthread_mutex_unlock(&mutex);
+
+	sum += *(unsigned long *) message;
 
 	return message;
 };
@@ -47,6 +49,7 @@ int main(int argc, char **argv) {
 
 	printf("0x%08lx (%lu)\n", *(unsigned long *) pthread_result, *(unsigned long *) pthread_result);
 	printf("0x%08lx (%lu)\n", *(unsigned long *) pthread_result2, *(unsigned long *) pthread_result2);
+	printf("0x%08lx (%lu)\n", sum, sum);
 
 	pthread_mutex_destroy(&mutex);
 
