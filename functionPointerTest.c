@@ -45,7 +45,6 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < (sizeof(command_list) / sizeof(struct command_function)); i++) {
 		if (strcmp(command, command_list[i].command) == 0) {
 			command_list[i].function();
-			break;
 		};
 	};
 
